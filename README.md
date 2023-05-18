@@ -30,7 +30,7 @@ Realiza cadastro do usuário.
 Valida login e retorna token jwt de login.
 
 ## POST http://localhost:3000/usuario/recuperar
-Retorna as linguagens usadas para exibir a lista de repositórios.
+Envia email para recuperação de senha.
 
 # Testes unitários
 ```bash
