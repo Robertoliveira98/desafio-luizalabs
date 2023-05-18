@@ -26,7 +26,6 @@ class EmailAdapter {
                 to: email,
                 subject: assunto,
                 html: html,
-                // text: "Oi mo consegui enviar email XD"
             })
 
             return transportResult;
