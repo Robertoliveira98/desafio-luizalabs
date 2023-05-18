@@ -13,4 +13,8 @@ module.exports = function (app) {
         usuarioController.login(req, res, next);
     });
 
+    app.post('/usuario/recuperar', (req, res, next) => {
+        usuarioController.recuperarSenha(req, res, next);
+    });
+
 }
