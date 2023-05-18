@@ -6,7 +6,7 @@ class CadastroController {
         try {
             let result = await service.cadastrarUsuario(req.body);
             if (result.sucesso) {
-                res.status(200).json(result.usuario);
+                res.status(200).json(result);
             } else {
                 res.status(500).json({ mensagem: "Usuário já existe" });
             }
@@ -36,7 +36,7 @@ class CadastroController {
         try {
             let data = await service.recuperarSenha(req.body.email);
 
-            if (data.valido) {
+            if (data.emailEnviado) {
                 res.status(200).json(data);
             } else {
                 res.status(500).json({ mensagem: data.mensagem });

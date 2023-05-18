@@ -16,7 +16,7 @@ class CadastroService {
         if (!user) {
             result.usuario = await usuariosModel.create(body);
             result.sucesso = true;
-            const transportResponse = _enviaEmailCadastro(body.email, body.nome);
+            result.emailEnviado = await _enviaEmailCadastro(body.email, body.nome);
         } 
 
         return result;
@@ -47,13 +47,14 @@ class CadastroService {
     async recuperarSenha(email) {
 
         let user = await usuariosModel.findOne({ email }).lean();
-        let result = { valido: false, emailEnviado: false, mensagem: "", };
+        let result = { emailEnviado: false, mensagem: "" };
 
         if (user) {
-            const transportResponse = _enviaEmailRecuperacao(email, user.nome, "123456789");
-            result.emailEnviado = true;
-            result.mensagem = "E-mail de recuperação enviado";
-            result.transportResponse = transportResponse;
+            // TODO -> criarr senha aleatoria e alterar no banco OU enviar link para alterar senha
+
+            let emailEnviado = await _enviaEmailRecuperacao(email, user.nome, "123456789");
+            result.emailEnviado = emailEnviado;
+            result.mensagem = emailEnviado ? "E-mail de recuperação enviado" : "Erro ao enviar E-mail de recuperação. Favor, realizar nova tentativa!";
         } else {
             result.mensagem = "Usuário não encontrado";
         }
@@ -357,7 +358,7 @@ async function _enviaEmailRecuperacao(email, nome, senha) {
     
     </html>
     `
-    await emailAdapter.enviaEmail(email, html, "Recuperar senha");
+    return await emailAdapter.enviaEmail(email, html, "Recuperar senha");
 }
 
 /**
@@ -632,7 +633,7 @@ async function _enviaEmailCadastro(email, nome) {
     
     </html>
     `
-    await emailAdapter.enviaEmail(email, html, "Cadastro realizado com sucesso");
+    return await emailAdapter.enviaEmail(email, html, "Cadastro realizado com sucesso");
 }
 
 module.exports = new CadastroService();

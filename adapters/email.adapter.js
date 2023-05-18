@@ -21,16 +21,17 @@ class EmailAdapter {
     */
     async enviaEmail(email, html, assunto) {
         try {
-            let transportResult = transport.sendMail({
+            await transport.sendMail({
                 from: "Desafio Luizalabs <luizalabsdesafio@gmail.com>",
                 to: email,
                 subject: assunto,
                 html: html,
             })
 
-            return transportResult;
+            return true;
         } catch (error) {
             console.log(error)
+            return false;
         }
     }
 }
