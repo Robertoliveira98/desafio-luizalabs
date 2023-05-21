@@ -3,13 +3,16 @@ const http = require('http');
 const path = require('path');
 const bodyParser = require('body-parser');
 var mongoose = require('mongoose');
+var cors = require('cors')
+require('dotenv').config()
 
 mongoose.set("strictQuery", false);
 mongoose.connect('mongodb://localhost/desafiolabs');
 
 var app = express();
+app.use(cors())
 
-app.set('port', 3000);
+app.set('port', process.env.PORT);
 app.use(bodyParser.json());
 
 require('./routes')(app);
