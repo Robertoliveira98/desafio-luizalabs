@@ -14,9 +14,10 @@ class CadastroService {
         let user = await usuariosModel.findOne({ email: body.email }).lean();
 
         if (!user) {
-            result.usuario = await usuariosModel.create(body);
+            result.usuario = (await usuariosModel.create(body)).toJSON();
             result.sucesso = true;
             result.emailEnviado = await this._enviaEmailCadastro(body.email, body.nome);
+            result.token = this._gerarTokenJWT(result.usuario);
         } 
 
         return result;
