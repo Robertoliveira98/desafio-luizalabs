@@ -63,6 +63,25 @@ class CadastroService {
         return result;
     }
 
+    /**
+    *   @param {String} email -> E-mail do usuário.
+    *   @param {String} senha -> Nova senha.
+    */
+    async alterarSenha(email, senha) {
+
+        let user = await usuariosModel.findOne({ email }).lean();
+        let result = { sucesso: false, mensagem: "" };
+
+        if (user) {
+            await usuariosModel.updateOne({ email }, { senha })
+            result.sucesso = true;
+        } else {
+            result.mensagem = "Usuário não encontrado";
+        }
+
+        return result;
+    }
+
 
 /**
 *   @param {Object} usuario -> Registro do Usuario que está logando.

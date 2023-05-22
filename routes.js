@@ -16,5 +16,9 @@ module.exports = function (app) {
     app.post('/usuario/recuperar', (req, res, next) => {
         usuarioController.recuperarSenha(req, res, next);
     });
+    
+    app.put('/usuario/alterarSenha', (req, res, next) => {
+        usuarioController.alterarSenha(req, res, next);
+    });
 
 }
