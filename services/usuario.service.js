@@ -6,9 +6,9 @@ const chaveJwt = process.env.CHAVE;
 
 class CadastroService {
 
-/**
-*   @param {Object} body -> Objeto contendo informações (email, nome e senha) do usuário a ser cadastrado.
-*/
+    /**
+    *   @param {Object} body -> Objeto contendo informações (email, nome e senha) do usuário a ser cadastrado.
+    */
     async cadastrarUsuario(body) {
         let result = { sucesso: false };
 
@@ -29,14 +29,14 @@ class CadastroService {
         return result;
     }
 
-/**
-*   @param {Object} body -> Objeto contendo senha e email do usuário.
-*/
+    /**
+    *   @param {Object} body -> Objeto contendo senha e email do usuário.
+    */
     async login(body) {
 
         let user = await usuariosModel.findOne({ email: body.email }).lean();
         let result = { valido: false, token: "", mensagem: "" };
-        const senha = this._descriptografarSenha(user.senha);
+        const senha = user ? this._descriptografarSenha(user.senha) : "";
         if (user && senha == body.senha) {
             const token = this._gerarTokenJWT(user);
             result.valido = true;
@@ -48,9 +48,9 @@ class CadastroService {
         return result;
     }
     
-/**
-*   @param {String} email -> E-mail destino.
-*/
+    /**
+    *   @param {String} email -> E-mail destino.
+    */
     async recuperarSenha(email) {
 
         let user = await usuariosModel.findOne({ email }).lean();
@@ -78,7 +78,8 @@ class CadastroService {
         let result = { sucesso: false, mensagem: "" };
 
         if (user) {
-            await usuariosModel.updateOne({ email }, { senha })
+            let senhaCriptografada = this._criptografarSenha(senha);
+            await usuariosModel.updateOne({ email }, { senha: senhaCriptografada })
             result.sucesso = true;
         } else {
             result.mensagem = "Usuário não encontrado";
@@ -88,9 +89,9 @@ class CadastroService {
     }
 
 
-/**
-*   @param {Object} usuario -> Registro do Usuario que está logando.
-*/
+    /**
+    *   @param {Object} usuario -> Registro do Usuario que está logando.
+    */
     _gerarTokenJWT(usuario) {
         return jwt.sign(usuario, chaveJwt, { expiresIn: "4h" });
     }
@@ -118,11 +119,11 @@ class CadastroService {
     }
 
 
-/**
-*   @param {String} email -> E-mail destino.
-*   @param {String} nome -> Nome do usuário.
-*   @param {String} senha -> Nova senha para restauração.
-*/
+    /**
+    *   @param {String} email -> E-mail destino.
+    *   @param {String} nome -> Nome do usuário.
+    *   @param {String} senha -> Nova senha para restauração.
+    */
     async _enviaEmailRecuperacao(email, nome, token) {
         let html = `<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -414,10 +415,10 @@ class CadastroService {
         return await emailAdapter.enviaEmail(email, html, "Recuperar senha");
     }
 
-/**
-*   @param {String} email -> E-mail destino.
-*   @param {String} nome -> Nome do usuário.
-*/
+    /**
+    *   @param {String} email -> E-mail destino.
+    *   @param {String} nome -> Nome do usuário.
+    */
     async _enviaEmailCadastro(email, nome) {
         let html = `<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
