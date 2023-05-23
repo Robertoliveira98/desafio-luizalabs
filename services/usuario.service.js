@@ -1,7 +1,8 @@
 const usuariosModel = require('../models/usuarios.model');
 const emailAdapter = require('../adapters/email.adapter');
 const jwt = require('jsonwebtoken');
-const chaveJwt = "desafioLabs";
+const crypto = require("crypto");
+const chaveJwt = process.env.CHAVE;
 
 class CadastroService {
 
@@ -14,7 +15,12 @@ class CadastroService {
         let user = await usuariosModel.findOne({ email: body.email }).lean();
 
         if (!user) {
-            result.usuario = (await usuariosModel.create(body)).toJSON();
+            let senhaCritografada = this._criptografarSenha(body.senha);
+            result.usuario = (await usuariosModel.create({
+                email: body.email,
+                nome: body.nome,
+                senha: senhaCritografada,
+            })).toJSON();
             result.sucesso = true;
             result.emailEnviado = await this._enviaEmailCadastro(body.email, body.nome);
             result.token = this._gerarTokenJWT(result.usuario);
@@ -30,8 +36,8 @@ class CadastroService {
 
         let user = await usuariosModel.findOne({ email: body.email }).lean();
         let result = { valido: false, token: "", mensagem: "" };
-
-        if (user && user.senha == body.senha) {
+        const senha = this._descriptografarSenha(user.senha);
+        if (user && senha == body.senha) {
             const token = this._gerarTokenJWT(user);
             result.valido = true;
             result.token = token;
@@ -88,6 +94,29 @@ class CadastroService {
     _gerarTokenJWT(usuario) {
         return jwt.sign(usuario, chaveJwt, { expiresIn: "4h" });
     }
+
+    /**
+    *   @param {Object} senha -> Senha que deve ser criptografada.
+    */
+    _criptografarSenha(senha) {
+        const cipher = crypto.createCipher('aes-256-cbc', process.env.CHAVE);
+        let senhaCriptografada = cipher.update(senha, 'utf8', 'hex');
+        senhaCriptografada += cipher.final('hex');
+
+        return senhaCriptografada;
+    }
+
+    /**
+    *   @param {Object} senhaCriptografada -> Senha que deve ser descriptografada.
+    */
+    _descriptografarSenha(senhaCriptografada) {
+        const decipher = crypto.createDecipher('aes-256-cbc', process.env.CHAVE);
+        let senha = decipher.update(senhaCriptografada, 'hex', 'utf8');
+        senha += decipher.final('utf8');
+
+        return senha;
+    }
+
 
 /**
 *   @param {String} email -> E-mail destino.
