@@ -6,6 +6,7 @@ const chai = require("chai");
 const expect = chai.expect;
 let sandbox = require("sandbox");
 const jwt = require('jsonwebtoken');
+const { describe } = require("mocha");
 
 beforeEach(() => {
 	sandbox = sinon.createSandbox();
@@ -31,38 +32,54 @@ describe("Class usuarioService", () => {
 		});
 
 		it("Usuario Criado e erro ao enviar email", async () => {
-			let mock = { sucesso: true, usuario: { nome: "nome" }, emailEnviado: false }
+			let mock = { sucesso: true, usuario: { nome: "nome" }, emailEnviado: false, token: "a1b2c3" }
 			const stubFindOne = sandbox.stub(usuariosModel, "findOne").returns({
 				lean: () => {
 					return Promise.resolve(undefined)
 				}
 			});
 
-			const stubCreate = sandbox.stub(usuariosModel, "create").resolves({ nome: "nome" });
-			const stubEmail = sandbox.stub(usuarioService, "_enviaEmailCadastro").resolves(false);
+			const stubCreate = sandbox.stub(usuariosModel, "create").returns({
+				toJSON: () => {
+					return { nome: "nome" };
+				}
+			});
+			const stubEmail = sandbox.stub(usuarioService, "_criptografarSenha").returns("senha");
+			const stubCript = sandbox.stub(usuarioService, "_enviaEmailCadastro").resolves(false);
+			const stubJwt = sandbox.stub(usuarioService, "_gerarTokenJWT").returns("a1b2c3");
 			const response = await usuarioService.cadastrarUsuario({ nome: "nome", email: "a@a.com" });
 
 			expect(stubFindOne.calledOnce).to.be.true;
 			expect(stubCreate.calledOnce).to.be.true;
+			expect(stubCript.calledOnce).to.be.true;
 			expect(stubEmail.calledOnce).to.be.true;
+			expect(stubJwt.calledOnce).to.be.true;
 			expect(response).to.deep.equal(mock);
 		});
 
 		it("Usuario Criado e email enviado", async () => {
-			let mock = { sucesso: true, usuario: { nome: "nome" }, emailEnviado: true }
+			let mock = { sucesso: true, usuario: { nome: "nome" }, emailEnviado: true, token: "a1b2c3" }
 			const stubFindOne = sandbox.stub(usuariosModel, "findOne").returns({
 				lean: () => {
 					return Promise.resolve(undefined)
 				}
 			});
 
-			const stubCreate = sandbox.stub(usuariosModel, "create").resolves({ nome: "nome" });
+			const stubCreate = sandbox.stub(usuariosModel, "create").returns({
+				toJSON: () => {
+					return { nome: "nome" };
+				}
+			});
+			const stubCript = sandbox.stub(usuarioService, "_criptografarSenha").returns("senha");
 			const stubEmail = sandbox.stub(usuarioService, "_enviaEmailCadastro").resolves(true);
+			const stubJwt = sandbox.stub(usuarioService, "_gerarTokenJWT").returns("a1b2c3");
 			const response = await usuarioService.cadastrarUsuario({ nome: "nome", email: "a@a.com" });
 
 			expect(stubFindOne.calledOnce).to.be.true;
 			expect(stubCreate.calledOnce).to.be.true;
+			expect(stubCript.calledOnce).to.be.true;
 			expect(stubEmail.calledOnce).to.be.true;
+			expect(stubJwt.calledOnce).to.be.true;
 			expect(response).to.deep.equal(mock);
 		});
 	});
@@ -88,9 +105,11 @@ describe("Class usuarioService", () => {
 					return Promise.resolve({ senha: "abcde" })
 				}
 			});
+			const stubCript = sandbox.stub(usuarioService, "_descriptografarSenha").returns("senha");
 
 			const response = await usuarioService.login({ senha: "12345", email: "a@a.com" });
 			expect(stubFindOne.calledOnce).to.be.true;
+			expect(stubCript.calledOnce).to.be.true;
 			expect(response).to.deep.equal(mock);
 		});
 
@@ -98,14 +117,16 @@ describe("Class usuarioService", () => {
 			let mock = { valido: true, token: "a1b2c3", mensagem: "" };
 			const stubFindOne = sandbox.stub(usuariosModel, "findOne").returns({
 				lean: () => {
-					return Promise.resolve({ senha: "12345" })
+					return Promise.resolve({ senha: "54321" })
 				}
 			});
+			const stubCript = sandbox.stub(usuarioService, "_descriptografarSenha").returns("12345");
 			const stubToken = sandbox.stub(usuarioService, "_gerarTokenJWT").returns("a1b2c3");
 
 			const response = await usuarioService.login({ senha: "12345", email: "a@a.com" });
 			expect(stubFindOne.calledOnce).to.be.true;
 			expect(stubToken.calledOnce).to.be.true;
+			expect(stubCript.calledOnce).to.be.true;
 			expect(response).to.deep.equal(mock);
 		});
 	});
@@ -130,10 +151,12 @@ describe("Class usuarioService", () => {
 					return Promise.resolve({ email: "a@a.com", nome: "a" })
 				}
 			});
+			const stubJwt = sandbox.stub(usuarioService, "_gerarTokenJWT").returns("a1b2c3");
 			const stubEmail = sandbox.stub(usuarioService, "_enviaEmailRecuperacao").returns(false);
 
 			const response = await usuarioService.recuperarSenha("a@a.com");
 			expect(stubFindOne.calledOnce).to.be.true;
+			expect(stubJwt.calledOnce).to.be.true;
 			expect(stubEmail.calledOnce).to.be.true;
 			expect(response).to.deep.equal(mock);
 		});
@@ -144,10 +167,12 @@ describe("Class usuarioService", () => {
 					return Promise.resolve({ email: "a@a.com", nome: "a" })
 				}
 			});
+			const stubJwt = sandbox.stub(usuarioService, "_gerarTokenJWT").returns("a1b2c3");
 			const stubEmail = sandbox.stub(usuarioService, "_enviaEmailRecuperacao").returns(true);
 
 			const response = await usuarioService.recuperarSenha("a@a.com");
 			expect(stubFindOne.calledOnce).to.be.true;
+			expect(stubJwt.calledOnce).to.be.true;
 			expect(stubEmail.calledOnce).to.be.true;
 			expect(response).to.deep.equal(mock);
 		});

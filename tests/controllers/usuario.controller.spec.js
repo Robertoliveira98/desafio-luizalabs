@@ -38,7 +38,7 @@ describe('Class UsuarioController', () => {
         });
         it('Erro', async () => {
 
-            let mock = { mensagem: "Erro ao cadasrar usuários" };
+            let mock = { mensagem: "Erro ao cadastrar usuários" };
 
             sandbox.stub(usuarioService, "cadastrarUsuario").rejects();
             const res = await request(app).post('/usuario/cadastro').send(payload)
@@ -100,10 +100,41 @@ describe('Class UsuarioController', () => {
         });
         it('Erro', async () => {
 
-            let mock = { mensagem: "Falha ao fazer login" };
+            let mock = { mensagem: "Falha ao enviar e-mail de recuperação" };
 
             sandbox.stub(usuarioService, "recuperarSenha").rejects();
             const res = await request(app).post('/usuario/recuperar').send(payload)
+            expect(res.status).to.equal(500);
+            expect(res.body).to.deep.equal(mock);
+        });
+    });
+
+    describe('Method alterarSenha', () => {
+        let payload = { email: "c" };
+        it('Sucesso', async () => {
+
+            let mock = { sucesso: true };
+
+            sandbox.stub(usuarioService, "alterarSenha").resolves(mock);
+            const res = await request(app).put('/usuario/alterarSenha').send(payload)
+            expect(res.status).to.equal(200);
+            expect(res.body).to.deep.equal(mock);
+        });
+        it('Email não enviado', async () => {
+
+            let mock = { mensagem: "Usuário não encontrado" };
+
+            sandbox.stub(usuarioService, "alterarSenha").resolves({ sucesso: false, mensagem: "Usuário não encontrado" });
+            const res = await request(app).put('/usuario/alterarSenha').send(payload)
+            expect(res.status).to.equal(500);
+            expect(res.body).to.deep.equal(mock);
+        });
+        it('Erro', async () => {
+
+            let mock = { mensagem: "Falha ao alterar senha" };
+
+            sandbox.stub(usuarioService, "alterarSenha").rejects();
+            const res = await request(app).put('/usuario/alterarSenha').send(payload)
             expect(res.status).to.equal(500);
             expect(res.body).to.deep.equal(mock);
         });
