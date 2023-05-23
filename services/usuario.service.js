@@ -8,6 +8,7 @@ class CadastroService {
 
     /**
     *   @param {Object} body -> Objeto contendo informações (email, nome e senha) do usuário a ser cadastrado.
+    *   @returns {Object} -> Objeto com confirmação de ações (sucesso e emailEnviado) e token jwt.
     */
     async cadastrarUsuario(body) {
         let result = { sucesso: false };
@@ -32,6 +33,7 @@ class CadastroService {
 
     /**
     *   @param {Object} body -> Objeto contendo senha e email do usuário.
+    *   @returns {Object} -> Objeto contendo se usuario é valido, token jwt ou mensagem de erro.
     */
     async login(body) {
 
@@ -52,6 +54,7 @@ class CadastroService {
     
     /**
     *   @param {String} email -> E-mail destino.
+    *   @returns {Object} -> Objeto contendo se email foi enviado com sucesso ou mensagem de erro.
     */
     async recuperarSenha(email) {
 
@@ -73,6 +76,7 @@ class CadastroService {
     /**
     *   @param {String} email -> E-mail do usuário.
     *   @param {String} senha -> Nova senha.
+    *   @returns {Object} -> Objeto contendo se senha foi alterada com sucesso ou mensagem de erro.
     */
     async alterarSenha(email, senha) {
 
@@ -93,6 +97,7 @@ class CadastroService {
 
     /**
     *   @param {Object} usuario -> Registro do Usuario que está logando.
+    *   @returns {String} -> Token Jwt.
     */
     _gerarTokenJWT(usuario) {
         return jwt.sign(usuario, chaveJwt, { expiresIn: "4h" });
@@ -100,6 +105,7 @@ class CadastroService {
 
     /**
     *   @param {Object} senha -> Senha que deve ser criptografada.
+    *   @returns {String} -> Senha criptografada.
     */
     _criptografarSenha(senha) {
         const cipher = crypto.createCipher('aes-256-cbc', process.env.CHAVE);
@@ -110,7 +116,8 @@ class CadastroService {
     }
 
     /**
-    *   @param {Object} senhaCriptografada -> Senha que deve ser descriptografada.
+    *   @param {Object} senhaCriptografada -> Senha criptografada.
+    *   @returns {String} -> Senha descriptografada.
     */
     _descriptografarSenha(senhaCriptografada) {
         const decipher = crypto.createDecipher('aes-256-cbc', process.env.CHAVE);
@@ -125,6 +132,7 @@ class CadastroService {
     *   @param {String} email -> E-mail destino.
     *   @param {String} nome -> Nome do usuário.
     *   @param {String} senha -> Nova senha para restauração.
+    *   @returns {Boolean} -> Se e-mail foi enviado com sucesso.
     */
     async _enviaEmailRecuperacao(email, nome, token) {
         let html = `<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -420,6 +428,7 @@ class CadastroService {
     /**
     *   @param {String} email -> E-mail destino.
     *   @param {String} nome -> Nome do usuário.
+    *   @returns {Boolean} -> Se e-mail foi enviado com sucesso.
     */
     async _enviaEmailCadastro(email, nome) {
         let html = `<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
