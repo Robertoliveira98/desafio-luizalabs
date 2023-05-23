@@ -11,7 +11,7 @@ class CadastroController {
                 res.status(500).json({ mensagem: "Usuário já existe" });
             }
         } catch (error) {
-            res.status(500).json({ mensagem: "Erro ao cadasrar usuários" });
+            res.status(500).json({ mensagem: "Erro ao cadastrar usuários" });
         }
     }
 

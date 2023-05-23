@@ -12,7 +12,7 @@ class CadastroService {
     async cadastrarUsuario(body) {
         let result = { sucesso: false };
 
-        let user = await usuariosModel.findOne({ email: body.email }).lean();
+        let user = await usuariosModel.findOne({ email: body.email }, { senha: 0 }).lean();
 
         if (!user) {
             let senhaCritografada = this._criptografarSenha(body.senha);
@@ -21,6 +21,7 @@ class CadastroService {
                 nome: body.nome,
                 senha: senhaCritografada,
             })).toJSON();
+            delete result.usuario.senha;
             result.sucesso = true;
             result.emailEnviado = await this._enviaEmailCadastro(body.email, body.nome);
             result.token = this._gerarTokenJWT(result.usuario);
@@ -38,6 +39,7 @@ class CadastroService {
         let result = { valido: false, token: "", mensagem: "" };
         const senha = user ? this._descriptografarSenha(user.senha) : "";
         if (user && senha == body.senha) {
+            delete user.senha;
             const token = this._gerarTokenJWT(user);
             result.valido = true;
             result.token = token;
@@ -53,7 +55,7 @@ class CadastroService {
     */
     async recuperarSenha(email) {
 
-        let user = await usuariosModel.findOne({ email }).lean();
+        let user = await usuariosModel.findOne({ email }, { senha: 0 }).lean();
         let result = { emailEnviado: false, mensagem: "" };
 
         if (user) {
@@ -74,7 +76,7 @@ class CadastroService {
     */
     async alterarSenha(email, senha) {
 
-        let user = await usuariosModel.findOne({ email }).lean();
+        let user = await usuariosModel.findOne({ email }, { senha: 0 }).lean();
         let result = { sucesso: false, mensagem: "" };
 
         if (user) {
